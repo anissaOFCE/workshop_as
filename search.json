@@ -1,0 +1,205 @@
+[
+  {
+    "objectID": "web_workshop.html",
+    "href": "web_workshop.html",
+    "title": "Construire un site OFCE",
+    "section": "",
+    "text": "ofceweb est le toolkit R qui sert à :\n\ninitialiser un site Quarto (setup_site())\nle rendre (render_site())\nle publier (deploy_site())\noptionnellement le chiffrer (encrypt_site())\n\n\n\n\n\n\n\nNotePourquoi un package ?\n\n\n\n\n\nPlusieurs sites OFCE partagent la même infrastructure (workflows FTP, sitemap, indexation Algolia, chiffrement staticrypt). Plutôt que de dupliquer cette plomberie dans chaque dépôt, on la centralise ici. Les dépôts consommateurs (webblog, webhome, sites génériques) chargent ofceweb et appellent ses points d’entrée.\n\n\n\n\n\n\n\n\nOù héberger : serveurs OFCE (FTP) ou GitHub Pages ?\nQuelle visibilité : dépôt public ou privé ?\n\n\n\n\n\n\n\n\nNotePourquoi ça compte\n\n\n\n\n\n\nL’hébergement détermine la chaîne de déploiement : FTP via GitHub Actions vs quarto publish gh-pages local.\nLa visibilité conditionne les options de chiffrement : un site sensible publié sur dépôt public + GitHub Pages doit passer par encrypt_site(). Sur OFCE, la visibilité du dépôt n’a aucun impact (le FTP ignore GitHub).\n\n\n\n\n\n\n\n\n\n\nChoix\nofce_host\nPublication\n\n\n\n\nServeurs OFCE\nTRUE\nFTP via ftp_deploy.yml\n\n\nGitHub Pages\nFALSE\nquarto publish gh-pages\n\n\n\n\n\n\n\n\n\nNotePourquoi OFCE par défaut\n\n\n\n\n\nC’est le défaut historique : www.ofce.fr/&lt;site-path&gt;. Les workflows fournis (ftp_deploy.yml) et les secrets STAGING_* / WP_* / THREEME_* sont déjà câblés. GitHub Pages est un fallback utile pour les sites hors organisation OFCE ou expérimentaux."
+  },
+  {
+    "objectID": "web_workshop.html#de-quoi-parle-t-on",
+    "href": "web_workshop.html#de-quoi-parle-t-on",
+    "title": "Construire un site OFCE",
+    "section": "",
+    "text": "ofceweb est le toolkit R qui sert à :\n\ninitialiser un site Quarto (setup_site())\nle rendre (render_site())\nle publier (deploy_site())\noptionnellement le chiffrer (encrypt_site())\n\n\n\n\n\n\n\nNotePourquoi un package ?\n\n\n\n\n\nPlusieurs sites OFCE partagent la même infrastructure (workflows FTP, sitemap, indexation Algolia, chiffrement staticrypt). Plutôt que de dupliquer cette plomberie dans chaque dépôt, on la centralise ici. Les dépôts consommateurs (webblog, webhome, sites génériques) chargent ofceweb et appellent ses points d’entrée."
+  },
+  {
+    "objectID": "web_workshop.html#deux-questions-à-trancher",
+    "href": "web_workshop.html#deux-questions-à-trancher",
+    "title": "Construire un site OFCE",
+    "section": "",
+    "text": "Où héberger : serveurs OFCE (FTP) ou GitHub Pages ?\nQuelle visibilité : dépôt public ou privé ?\n\n\n\n\n\n\n\n\nNotePourquoi ça compte\n\n\n\n\n\n\nL’hébergement détermine la chaîne de déploiement : FTP via GitHub Actions vs quarto publish gh-pages local.\nLa visibilité conditionne les options de chiffrement : un site sensible publié sur dépôt public + GitHub Pages doit passer par encrypt_site(). Sur OFCE, la visibilité du dépôt n’a aucun impact (le FTP ignore GitHub)."
+  },
+  {
+    "objectID": "web_workshop.html#hébergement-tableau-de-décision",
+    "href": "web_workshop.html#hébergement-tableau-de-décision",
+    "title": "Construire un site OFCE",
+    "section": "",
+    "text": "Choix\nofce_host\nPublication\n\n\n\n\nServeurs OFCE\nTRUE\nFTP via ftp_deploy.yml\n\n\nGitHub Pages\nFALSE\nquarto publish gh-pages\n\n\n\n\n\n\n\n\n\nNotePourquoi OFCE par défaut\n\n\n\n\n\nC’est le défaut historique : www.ofce.fr/&lt;site-path&gt;. Les workflows fournis (ftp_deploy.yml) et les secrets STAGING_* / WP_* / THREEME_* sont déjà câblés. GitHub Pages est un fallback utile pour les sites hors organisation OFCE ou expérimentaux."
+  },
+  {
+    "objectID": "web_workshop.html#action-créer-un-pat-github",
+    "href": "web_workshop.html#action-créer-un-pat-github",
+    "title": "Construire un site OFCE",
+    "section": "Action — créer un PAT GitHub",
+    "text": "Action — créer un PAT GitHub\n\nAller sur https://github.com/settings/tokens?type=beta\nGenerate new token\nName : ofceweb-deploy\nExpiration : No expiration (ou date au choix)\nRepository access : dépôts concernés\nPermissions : Contents R/W, Actions R/W, Secrets R/W (si chiffrement)\nCopier le token immédiatement (plus jamais visible ensuite)\n\n\n\n\n\n\n\nNotePourquoi un PAT ?\n\n\n\n\n\nUn Personal Access Token remplace votre mot de passe pour les opérations programmatiques (push HTTPS, API, dispatch de workflow). Il est révocable, scope-able, et indispensable pour que site2branch() puisse pousser sur site-deploy puis dispatcher ftp_deploy.yml."
+  },
+  {
+    "objectID": "web_workshop.html#action-stocker-le-pat",
+    "href": "web_workshop.html#action-stocker-le-pat",
+    "title": "Construire un site OFCE",
+    "section": "Action — stocker le PAT",
+    "text": "Action — stocker le PAT\nDans R :\nusethis::edit_r_environ()\nY ajouter (sans guillemets ni espaces) :\nGITHUB_PAT=ghp_xxxxxxxxxxxx\nDEPLOY_PAT=ghp_xxxxxxxxxxxx\nPuis redémarrer R.\n\n\n\n\n\n\nNotePourquoi deux variables ?\n\n\n\n\n\nGITHUB_PAT est lu par usethis, gh, gitcreds pour les appels API classiques. DEPLOY_PAT est lu en priorité par site2branch() parce que sur GitHub Actions, le GITHUB_TOKEN ne peut pas dispatcher d’autres workflows — il faut un PAT explicite. En local, on met la même valeur dans les deux."
+  },
+  {
+    "objectID": "web_workshop.html#action-installer-gh-macos",
+    "href": "web_workshop.html#action-installer-gh-macos",
+    "title": "Construire un site OFCE",
+    "section": "Action — installer gh (macOS)",
+    "text": "Action — installer gh (macOS)\nbrew install gh"
+  },
+  {
+    "objectID": "web_workshop.html#action-installer-gh-windows",
+    "href": "web_workshop.html#action-installer-gh-windows",
+    "title": "Construire un site OFCE",
+    "section": "Action — installer gh (Windows)",
+    "text": "Action — installer gh (Windows)\nwinget install --id GitHub.cli\n\n\n\n\n\n\nNotePourquoi gh ?\n\n\n\n\n\nencrypt_site() utilise gh secret set pour créer le secret GitHub STATICRYPT_PASSWORD sur le dépôt. C’est la voie la plus fiable et auditée pour gérer les secrets d’un repo en CLI, et elle évite de manipuler des tokens à la main dans les URLs."
+  },
+  {
+    "objectID": "web_workshop.html#action-authentifier-gh",
+    "href": "web_workshop.html#action-authentifier-gh",
+    "title": "Construire un site OFCE",
+    "section": "Action — authentifier gh",
+    "text": "Action — authentifier gh\ngh auth login\nRéponses :\n\nAccount → GitHub.com\nProtocol → HTTPS\nAuthenticate Git? → Yes\nMethod → Login with a web browser\n\nVérification :\ngh auth status\n\n\n\n\n\n\nNotePourquoi HTTPS + browser\n\n\n\n\n\nHTTPS évite la configuration SSH (libgit2 ne sait pas utiliser l’agent SSH système — c’est pour ça que site2branch() réécrit déjà les remotes SSH en HTTPS). Le flux navigateur évite de coller un PAT qui peut traîner dans l’historique du shell."
+  },
+  {
+    "objectID": "web_workshop.html#setup-threeme-v4",
+    "href": "web_workshop.html#setup-threeme-v4",
+    "title": "Construire un site OFCE",
+    "section": "Setup ThreeME v4",
+    "text": "Setup ThreeME v4\nLe dépôt ThreeME_V4 fournit un script src/setup.R qui installe toutes les dépendances R (CRAN + GitHub) d’un coup. À sourcer depuis la racine du projet :\nsource(\"src/setup.R\")\n\n\n\n\n\n\nNoteCe que fait le script\n\n\n\n\n\n\nVérifie R ≥ 4.5.1\nInstalle pak et tidyverse s’ils manquent\nInstalle via pak::pak() tous les packages CRAN listés qui ne sont pas déjà présents\nCharge les packages GitHub (ofce, ofceweb, ermeeth, tresthor, pegr, ggbraid) — installation commentée, à décommenter pour mise à jour\nSource l’ensemble des fonctions de src/functions_src/"
+  },
+  {
+    "objectID": "web_workshop.html#setup.r-vérifs-bootstrap",
+    "href": "web_workshop.html#setup.r-vérifs-bootstrap",
+    "title": "Construire un site OFCE",
+    "section": "setup.R — vérifs & bootstrap",
+    "text": "setup.R — vérifs & bootstrap\noptions(scipen = 14)\n\nif(paste(R.version$major, R.version$minor, sep = \".\") &lt; \"4.5.1\"){\n  stop(\"\\U1F4A3 \\U1F4A3 Please update your R version to at least 4.5.1\")\n}\n\nif(\"pak\" %in% installed.packages()[ , \"Package\"] == FALSE){\n  install.packages(\"pak\")\n}\nif(\"tidyverse\" %in% installed.packages()[ , \"Package\"] == FALSE){\n  install.packages(\"tidyverse\")\n}\n\nlibrary(tidyverse)\nlibrary(pak)"
+  },
+  {
+    "objectID": "web_workshop.html#setup.r-packages-cran",
+    "href": "web_workshop.html#setup.r-packages-cran",
+    "title": "Construire un site OFCE",
+    "section": "setup.R — packages CRAN",
+    "text": "setup.R — packages CRAN\nrequired_CRAN_packages &lt;- c(\n  \"beepr\", \"cointReg\", \"colorspace\", \"countrycode\", \"crayon\", \"data.table\",\n  \"Deriv\", \"devtools\", \"DiagrammeR\", \"dplyr\", \"dtplyr\", \"eFRED\", \"eurostat\",\n  \"extrafont\", \"flextable\", \"fst\", \"geomtextpath\", \"ggarrow\",\n  \"ggh4x\", \"ggiraph\", \"ggplot2\", \"ggpp\", \"ggpubr\", \"ggrepel\", \"ggsci\",\n  \"ggtext\", \"ggthemes\", \"glue\", \"gridExtra\", \"gridGraphics\", \"gsubfn\", \"gt\",\n  \"haven\", \"hrbrthemes\", \"htmlwidgets\", \"httr\", \"insee\", \"jsonlite\",\n  \"kableExtra\", \"knitr\", \"learnr\", \"lemon\", \"lobstr\", \"lubridate\", \"magick\",\n  \"magrittr\", \"marquee\", \"MetricsWeighted\", \"microbenchmark\", \"officer\",\n  \"openxlsx\", \"paletteer\", \"patchwork\", \"plotly\", \"png\", \"qs2\", \"quarto\",\n  \"questionr\", \"RColorBrewer\", \"Rcpp\", \"RcppArmadillo\", \"rdbnomics\", \"readr\",\n  \"readxl\", \"remotes\", \"RJSONIO\", \"rmarkdown\", \"rsdmx\", \"rsvg\", \"scales\", \"shiny\",\n  \"showtext\", \"sourcoise\", \"splitstackshape\", \"staticryptR\", \"stringi\", \"stringr\",\n  \"svglite\", \"sys\", \"tibble\", \"tictoc\", \"tidyquant\", \"tidyr\", \"tidyverse\",\n  \"viridis\", \"webshot2\", \"writexl\", \"zip\", \"zoo\"\n)\n\nnot_installed_CRAN &lt;- required_CRAN_packages[\n  !(required_CRAN_packages %in% installed.packages()[ , \"Package\"])\n]\n\nif(length(not_installed_CRAN) &gt; 0){\n  not_installed_CRAN |&gt; map(~pak::pak(.x))\n}"
+  },
+  {
+    "objectID": "web_workshop.html#setup.r-packages-github-chargement",
+    "href": "web_workshop.html#setup.r-packages-github-chargement",
+    "title": "Construire un site OFCE",
+    "section": "setup.R — packages GitHub & chargement",
+    "text": "setup.R — packages GitHub & chargement\nrequired_GIT_packages &lt;- c(\"ofce\", \"ofceweb\", \"ermeeth\",\n                           \"tresthor\", \"pegr\", \"ggbraid\")\n\n# À décommenter pour mettre à jour :\n# pak::pak(\"OFCE/ofce\", ask = FALSE)\n# pak::pak(\"OFCE/tresthor\", ask = FALSE)\n# if(!\"pegr\" %in% installed.packages()[ , \"Package\"]){\n#   pak::pak(\"mslegrand/pegr\", ask = FALSE)\n# }\n# pak::pak(\"ThreeME-org/ermeeth\", ask = FALSE)\n# pak::pak(\"ofceweb/ofceweb\", ask = FALSE)\n# pak::pak(\"nsgrantham/ggbraid\", ask = FALSE)\n\npurrr::map(c(required_CRAN_packages, required_GIT_packages),\n           ~require(.x, character.only = TRUE))\n\npurrr::map(list.files(file.path(\"src\", \"functions_src\", \"\")),\n           ~source(file.path(\"src\", \"functions_src\", .x)))"
+  },
+  {
+    "objectID": "web_workshop.html#action-préparer-le-dépôt",
+    "href": "web_workshop.html#action-préparer-le-dépôt",
+    "title": "Construire un site OFCE",
+    "section": "Action — préparer le dépôt",
+    "text": "Action — préparer le dépôt\n\nCréer un dépôt GitHub vide\nLe cloner localement\nOuvrir une session R à sa racine\n\n\n\n\n\n\n\nNotePourquoi un dépôt vierge\n\n\n\n\n\nsetup_site() copie ses propres gabarits (_quarto.yml, www/, _extensions/, workflows). Un dépôt vide évite tout conflit avec des fichiers préexistants et garantit un point de départ propre que tout le monde peut reproduire."
+  },
+  {
+    "objectID": "web_workshop.html#action-lancer-setup_site",
+    "href": "web_workshop.html#action-lancer-setup_site",
+    "title": "Construire un site OFCE",
+    "section": "Action — lancer setup_site()",
+    "text": "Action — lancer setup_site()\nofceweb::setup_site(\n  ofce_host = TRUE,\n  ofce_server_location = \"staging\",   # ou \"wp\", \"threeme\"\n  website_title = \"Mon site\",\n  hypothesis = TRUE,\n  versionning = TRUE\n)\n\n\n\n\n\n\nNoteQue fait la fonction\n\n\n\n\n\n\nScanne les .qmd du dépôt\nCopie _quarto.yml, index.qmd (si absent), www/, _extensions/, workflows\nRenseigne titre, site-url, site-path, other-links, repo-url, hypothesis\nAjoute _site au .gitignore\nSi ofce_host = FALSE : crée la branche orpheline gh-pages"
+  },
+  {
+    "objectID": "web_workshop.html#action-commiter-pousser",
+    "href": "web_workshop.html#action-commiter-pousser",
+    "title": "Construire un site OFCE",
+    "section": "Action — commiter & pousser",
+    "text": "Action — commiter & pousser\ngit add -A\ngit commit -m \"setup_site\"\ngit push\n\n\n\n\n\n\nNotePourquoi maintenant\n\n\n\n\n\nsetup_site() modifie pas mal de fichiers (_quarto.yml, workflows, gabarits). Commiter immédiatement permet :\n\nde revenir en arrière proprement si les choix d’arguments ne sont pas les bons\nd’avoir un working tree propre avant la suite (notamment encrypt_site() et site2branch() y sont sensibles)\nde partager la config initiale aux collaborateurs"
+  },
+  {
+    "objectID": "web_workshop.html#versionning-ofce",
+    "href": "web_workshop.html#versionning-ofce",
+    "title": "Construire un site OFCE",
+    "section": "Versionning OFCE",
+    "text": "Versionning OFCE\nversionning = TRUE ajoute /v0 au site-path.\nPour incrémenter plus tard :\nofceweb::site_version_up()              # v0 → v1\nofceweb::site_version_up(\"v2024_q1\")    # custom\n\n\n\n\n\n\nNoteÀ quoi ça sert\n\n\n\n\n\nPermet de publier une nouvelle itération du site (ex. édition annuelle d’un rapport) sans écraser la précédente. Chaque version vit à une URL distincte (/v0, /v1, …) et reste accessible. OFCE uniquement — sans valeur sur GitHub Pages."
+  },
+  {
+    "objectID": "web_workshop.html#quand-lutiliser",
+    "href": "web_workshop.html#quand-lutiliser",
+    "title": "Construire un site OFCE",
+    "section": "Quand l’utiliser",
+    "text": "Quand l’utiliser\nSite sensible publié sur :\n\ndépôt public + GitHub Pages\nOFCE avec contenu sous embargo\n\nÀ sauter si le site est publiquement diffusable.\n\n\n\n\n\n\nNoteComment ça marche\n\n\n\n\n\nencrypt_site() ne chiffre pas : c’est render_site() qui applique staticryptR::staticryptr() sur _site/ quand il voit encrypt_site: true dans _quarto.yml. La fonction encrypt_site() se contente de mettre en place les conditions : flag YAML, secret GitHub, variable locale."
+  },
+  {
+    "objectID": "web_workshop.html#action-activer-le-chiffrement",
+    "href": "web_workshop.html#action-activer-le-chiffrement",
+    "title": "Construire un site OFCE",
+    "section": "Action — activer le chiffrement",
+    "text": "Action — activer le chiffrement\nofceweb::encrypt_site()\nL’utilisateur est invité à saisir un mot de passe (masqué si askpass est dispo).\n\n\n\n\n\n\nNoteCe qui est modifié\n\n\n\n\n\n\n_quarto.yml : ajoute encrypt_site: true\n.github/workflows/ftp_deploy.yml : injecte env: STATICRYPT_PASSWORD\nSecret GitHub STATICRYPT_PASSWORD créé via gh secret set\n.Renviron local : écrit le mot de passe (puis ajouté au .gitignore)"
+  },
+  {
+    "objectID": "web_workshop.html#action-redémarrer-r-commiter",
+    "href": "web_workshop.html#action-redémarrer-r-commiter",
+    "title": "Construire un site OFCE",
+    "section": "Action — redémarrer R + commiter",
+    "text": "Action — redémarrer R + commiter\n\nRedémarrer la session R (sinon STATICRYPT_PASSWORD n’est pas chargé)\nCommiter et pousser les changements :\n\ngit add _quarto.yml .github/workflows/ftp_deploy.yml .gitignore\ngit commit -m \"encrypt_site\"\ngit push\n\n\n\n\n\n\nNotePourquoi le redémarrage\n\n\n\n\n\n.Renviron est lu au démarrage de R. Sans redémarrage, Sys.getenv(\"STATICRYPT_PASSWORD\") retourne \"\" et render_site() chiffrera avec un mot de passe vide — non détecté au moment du render, débogué péniblement après."
+  },
+  {
+    "objectID": "web_workshop.html#caveat-github-pages",
+    "href": "web_workshop.html#caveat-github-pages",
+    "title": "Construire un site OFCE",
+    "section": "Caveat GitHub Pages",
+    "text": "Caveat GitHub Pages\nSur gh-pages, le chiffrement ne fonctionne que si vous lancez render_site() localement avant deploy_site().\n\n\n\n\n\n\nNotePourquoi\n\n\n\n\n\ndeploy_site() sur gh-pages exécute quarto publish gh-pages depuis votre machine, publiant le _site/ déjà chiffré. Aucun workflow CI ne déclenche un rendu côté GitHub Actions, donc le secret et le patch de ftp_deploy.yml posés par encrypt_site() sont inertes dans ce mode."
+  },
+  {
+    "objectID": "web_workshop.html#action-rendre-le-site",
+    "href": "web_workshop.html#action-rendre-le-site",
+    "title": "Construire un site OFCE",
+    "section": "Action — rendre le site",
+    "text": "Action — rendre le site\nofceweb::render_site()\nUn serveur local démarre automatiquement pour prévisualiser _site/.\n\n\n\n\n\n\nNotePipeline interne\n\n\n\n\n\n\nVide _site/\nquarto::quarto_render(output_format = \"all\")\nReconstruit _site/sitemap.xml\nStrippe les hash de contenu des fichiers site_libs/*\nSi encrypt_site: true : applique staticryptR::staticryptr()\nLance servr::httw(\"_site\") (URLs absolues réécrites en relatif pour la nav locale)"
+  },
+  {
+    "objectID": "web_workshop.html#options-utiles",
+    "href": "web_workshop.html#options-utiles",
+    "title": "Construire un site OFCE",
+    "section": "Options utiles",
+    "text": "Options utiles\n# build \"headless\", sans prévisualisation\nofceweb::render_site(render_site = FALSE)\n\n# build + push + dispatch en un appel\nofceweb::render_site(site2branch = TRUE)\n\n# parallélisme custom\nofceweb::render_site(workers = 4L)\n\n\n\n\n\n\nNotePourquoi patcher les hash\n\n\n\n\n\nQuarto suffixe les fichiers site_libs/* d’un hash de contenu (bootstrap-abc123.min.css). À chaque rendu le hash change même si le contenu est identique, et le sync FTP retransmet tout. Le patch les renomme en versions stables → upload incrémental."
+  },
+  {
+    "objectID": "web_workshop.html#action-publier",
+    "href": "web_workshop.html#action-publier",
+    "title": "Construire un site OFCE",
+    "section": "Action — publier",
+    "text": "Action — publier\nofceweb::deploy_site()\n\n\n\n\n\n\nNoteLogique de branchement\n\n\n\n\n\nLit ofce_host dans _quarto.yml :\n\nTRUE → site2branch() : push de _site/ vers site-deploy, puis dispatch de ftp_deploy.yml\nFALSE → quarto publish gh-pages --no-prompt --no-browser\n\nL’URL finale est affichée sur succès."
+  },
+  {
+    "objectID": "web_workshop.html#re-upload-complet-ofce",
+    "href": "web_workshop.html#re-upload-complet-ofce",
+    "title": "Construire un site OFCE",
+    "section": "Re-upload complet (OFCE)",
+    "text": "Re-upload complet (OFCE)\nofceweb::deploy_site(full_deploy = TRUE)\n\n\n\n\n\n\nNoteQuand l’utiliser\n\n\n\n\n\n.ftp-deploy-sync-state.json mémorise les hash des fichiers déjà uploadés. full_deploy = TRUE zéro-fie ces hash → tous les fichiers sont re-transmis (sans purger le serveur). Utile après un nettoyage manuel côté FTP ou si le sync state est suspect."
+  },
+  {
+    "objectID": "web_workshop.html#récap-en-4-étapes",
+    "href": "web_workshop.html#récap-en-4-étapes",
+    "title": "Construire un site OFCE",
+    "section": "Récap en 4 étapes",
+    "text": "Récap en 4 étapes\n# 1. config (dépôt cloné, session R à sa racine)\nofceweb::setup_site()\n\n# 2. (optionnel) chiffrement\nofceweb::encrypt_site()    # puis redémarrer R\n\n# 3. rendu\nofceweb::render_site()\n\n# 4. déploiement\nofceweb::deploy_site()\n\n\n\n\n\n\nNoteAu quotidien\n\n\n\n\n\nUne fois la config initiale faite, le cycle de tous les jours se réduit à :\nofceweb::render_site()\nofceweb::deploy_site()\nou en un seul appel :\nofceweb::render_site(site2branch = TRUE)"
+  },
+  {
+    "objectID": "web_workshop.html#helpers-à-connaître",
+    "href": "web_workshop.html#helpers-à-connaître",
+    "title": "Construire un site OFCE",
+    "section": "Helpers à connaître",
+    "text": "Helpers à connaître\n\nrescan_site() — rebalaye les .qmd et réécrit other-links\nsite_version_up() — incrémente la version du site-path (OFCE)\nremove_encrypt() — désactive le chiffrement\n\n\n\n\n\n\n\nNoteQuand les utiliser\n\n\n\n\n\n\nrescan_site() : après ajout/suppression de pages, pour que la navigation reflète l’arborescence réelle\nsite_version_up() : à chaque nouvelle édition publiée\nremove_encrypt() : pour rendre un site précédemment chiffré accessible sans mot de passe (idempotent ; supprime aussi le secret GitHub par défaut)"
+  },
+  {
+    "objectID": "web_workshop.html#documentation",
+    "href": "web_workshop.html#documentation",
+    "title": "Construire un site OFCE",
+    "section": "Documentation",
+    "text": "Documentation\n\nVignette prerequisites : PAT, gh CLI, variables d’env\nVignette build-a-site : cycle complet\n?ofceweb::setup_site etc. pour le détail des arguments"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Page d’accueil",
+    "section": "",
+    "text": "Remplacer le contenu de cette page par ce que vous voulez voir apparaître à la page d’accueil."
+  }
+]
