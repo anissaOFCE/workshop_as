@@ -54,5 +54,5 @@ filters:
   - social-share
 format:
   ofce-website-html: default
-encrypt_site: false
+encrypt_site: true
 ofce_host: true
